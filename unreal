@@ -1,0 +1,61 @@
+
+void ATARGETGameMode::ToStartGetData(FString TPlayerId) {
+
+
+
+	TSharedRef<IHttpRequest, ESPMode::ThreadSafe> GetDataInMatchRequest = HttpModule->CreateRequest();
+	GetDataInMatchRequest->OnProcessRequestComplete().BindUObject(this, &ATARGETGameMode::OnGetPlayerDataResponseReceived);
+	GetDataInMatchRequest->SetURL(ApiUrl + "/getdatainmatch");
+	GetDataInMatchRequest->SetVerb("GET");
+	GetDataInMatchRequest->SetHeader("PlayerID", TPlayerId);
+	GetDataInMatchRequest->SetHeader("Authorization", "dummy");
+	GetDataInMatchRequest->SetHeader("Content-Type", "application/json");
+	GetDataInMatchRequest->ProcessRequest();
+
+	UE_LOG(LogTemp, Warning, TEXT("GAME MODE Has Started...."));
+
+}
+
+
+void ATARGETGameMode::OnGetPlayerDataResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful) {
+	if (bWasSuccessful) {
+		TSharedPtr<FJsonObject> JsonObject;
+		TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Response->GetContentAsString());
+
+		if (FJsonSerializer::Deserialize(Reader, JsonObject)) {
+			if (JsonObject->HasField("playerData")) {
+
+				TSharedPtr<FJsonObject> PlayerData = JsonObject->GetObjectField("playerData");
+				TSharedPtr<FJsonObject> WinsObject = PlayerData->GetObjectField("Wins");
+				TSharedPtr<FJsonObject> LossesObject = PlayerData->GetObjectField("Losses");
+				TSharedPtr<FJsonObject> SpeedObject = PlayerData->GetObjectField("Speed");
+				TSharedPtr<FJsonObject> FireSpeedObject = PlayerData->GetObjectField("FireSpeed");
+				TSharedPtr<FJsonObject> ReloadObject = PlayerData->GetObjectField("Reload");
+				TSharedPtr<FJsonObject> DamageObject = PlayerData->GetObjectField("Damage");
+				TSharedPtr<FJsonObject> HopObject = PlayerData->GetObjectField("Hop");
+				TSharedPtr<FJsonObject> MagazineObject = PlayerData->GetObjectField("Magazine");
+
+				FString Wins1 = WinsObject->GetStringField("N");
+				FString Losses1 = LossesObject->GetStringField("N");
+				FString Speed1 = SpeedObject->GetStringField("N");
+				FString FireSpeed1 = FireSpeedObject->GetStringField("N");
+				FString Reload1 = ReloadObject->GetStringField("N");
+				FString Damage1 = DamageObject->GetStringField("N");
+				FString Hop1 = HopObject->GetStringField("N");
+				FString Magazine1 = MagazineObject->GetStringField("N");		
+
+				Damage = FCString::Atof(*Damage1);
+
+				UE_LOG(LogTemp, Warning, TEXT("Data Has Saved4...."));
+
+
+			}
+
+			UE_LOG(LogTemp, Warning, TEXT("Data Has Saved3...."));
+		}
+
+		UE_LOG(LogTemp, Warning, TEXT("Data Has Saved2...."));
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("Data Has Saved1...."));
+}
